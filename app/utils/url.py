@@ -1,5 +1,3 @@
-"""URL validation and helpers."""
-
 from urllib.parse import urlparse
 
 
@@ -16,19 +14,12 @@ def is_valid_url(url: str) -> bool:
 
 
 def get_domain(url: str) -> str:
-    """Return the registrable-ish domain (netloc without leading www.)."""
+    
     netloc = urlparse(url).netloc.lower()
     return netloc[4:] if netloc.startswith("www.") else netloc
 
 
 def source_key_for_url(url: str) -> str | None:
-    """Map a URL's domain to its source key.
-
-    Examples:
-        cnnindonesia.com → cnn
-        kompas.com       → kompas
-        detik.com        → detik
-    """
     from app.config.constants import SUPPORTED_PARSERS
 
     domain = get_domain(url)
@@ -39,7 +30,6 @@ def source_key_for_url(url: str) -> str | None:
 
 
 def resolve_url(base_url: str, maybe_relative: str | None) -> str | None:
-    """Resolve a possibly-relative URL (e.g. an image src) against the article URL."""
     if not maybe_relative:
         return None
 

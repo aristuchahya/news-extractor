@@ -22,25 +22,17 @@ logger = get_logger(__name__)
 
 
 async def extract_article(url: str) -> Article:
-    """Extract a single article. Raises ExtractorError subclasses on failure."""
     service = ExtractorService()
     return await service.extract(url)
 
 
 async def extract_articles(urls: list[str]) -> list[Article]:
-    """Extract many articles concurrently, sharing one connection pool.
-    Never raises per-URL — failures are reported via Article.status == "failed".
-    """
     async with HttpClient() as client:
         service = ExtractorService(http_client=client)
         return await asyncio.gather(*(service.extract_safe(url) for url in urls))
 
 
 async def extract_latest_by_source(source: str, limit: int = 10) -> list[Article]:
-    """Discover the latest article URLs on `source`'s homepage (single fetch) and
-    extract each. Raises ValidationError for an unknown source; per-URL extraction
-    failures are reported via Article.status == "failed", not raised.
-    """
     async with HttpClient() as client:
         urls = await discover_latest_urls(source, limit=limit, http_client=client)
         service = ExtractorService(http_client=client)
@@ -48,11 +40,6 @@ async def extract_latest_by_source(source: str, limit: int = 10) -> list[Article
 
 
 async def extract_many(inputs: list[str], limit_per_source: int = 10) -> list[Article]:
-    """Extract a mix of article URLs and source keys (e.g. "detik") in one batch,
-    sharing a single connection pool. A source key expands to its latest article
-    URLs via one homepage fetch. Never raises — every input, resolvable or not,
-    ends up as an Article with status "success" or "failed".
-    """
     known_sources = set(list_sources())
 
     async with HttpClient() as client:
@@ -91,7 +78,6 @@ async def extract_many(inputs: list[str], limit_per_source: int = 10) -> list[Ar
 
 
 def main() -> None:
-    """Demo entrypoint: extract a sample URL and print the JSON result."""
     import sys
 
     url = sys.argv[1] if len(sys.argv) > 1 else "https://news.detik.com/"

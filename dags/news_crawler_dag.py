@@ -8,10 +8,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-# ---------------------------------------------------------------------------
-# Make the project importable inside the Airflow container.
-# ---------------------------------------------------------------------------
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent  # noqa: SIM115
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
@@ -28,17 +25,12 @@ from app.utils.logger import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
 SOURCES: list[str] = sorted(SOURCE_HOMEPAGES)
 DEFAULT_LIMIT_PER_SOURCE: int = int(os.getenv("CRAWLER_LIMIT_PER_SOURCE", "3"))
 DEFAULT_DB_PATH: str = os.getenv("CRAWLER_DB_PATH", "/opt/airflow/data/articles.db")
 
 
-# ---------------------------------------------------------------------------
-# DAG
-# ---------------------------------------------------------------------------
+
 @dag(
     dag_id="news_crawler_pipeline",
     description="Discover article URLs from news sources, extract content, and ingest into SQLite.",
@@ -70,7 +62,6 @@ def news_crawler_pipeline() -> None:
         logger.info("Discovered %d URL(s) for source=%s", len(urls), source)
         return {"source": source, "urls": urls}
 
-    # ── Task 2: Extract articles from all discovered URLs ──
     @task(task_id="extract_articles", retries=1)
     def extract_articles(discovery_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
         all_urls: list[str] = []
@@ -95,7 +86,6 @@ def news_crawler_pipeline() -> None:
         logger.info("Extraction complete — %d success, %d failed", success, failed)
         return articles
 
-    # ── Task 3: Ingest into SQLite ──
     @task(task_id="ingest_to_sqlite")
     def ingest_to_sqlite(
         articles: list[dict[str, Any]], db_path: str = DEFAULT_DB_PATH

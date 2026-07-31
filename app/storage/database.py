@@ -67,9 +67,7 @@ class ArticleDB:
         self._db_path = Path(db_path)
         self._conn: sqlite3.Connection | None = None
 
-    # ------------------------------------------------------------------
-    # Connection management
-    # ------------------------------------------------------------------
+
 
     def initialize(self) -> None:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -78,8 +76,7 @@ class ArticleDB:
             detect_types=sqlite3.PARSE_DECLTYPES,
             timeout=10,
         )
-        # DELETE journal mode — single .db file, no -wal/-shm, works with
-        # Docker bind mounts and external tools (DBeaver, sqlite3 CLI, etc.).
+        
         self._conn.execute("PRAGMA journal_mode=DELETE")
         self._conn.execute("PRAGMA busy_timeout=5000")
         self._conn.execute("PRAGMA foreign_keys=ON")
@@ -139,7 +136,7 @@ class ArticleDB:
 
 
 def _prepare_rows(articles: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Convert Article dicts to rows suitable for SQLite (tags → JSON string)."""
+
     rows: list[dict[str, Any]] = []
     for a in articles:
         tags = a.get("tags", [])

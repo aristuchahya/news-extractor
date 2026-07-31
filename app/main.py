@@ -11,7 +11,6 @@ import asyncio
 
 from app.clients.http_client import HttpClient
 from app.config.constants import STATUS_FAILED
-from app.exceptions.extractor_exception import ExtractorError
 from app.models.article import Article
 from app.services.discovery_service import discover_latest_urls, list_sources
 from app.services.extractor_service import ExtractorService

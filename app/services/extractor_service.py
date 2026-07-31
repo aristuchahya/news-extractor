@@ -16,7 +16,6 @@ logger = get_logger(__name__)
 
 
 class ExtractorService:
-
     def __init__(self, http_client: HttpClient | None = None) -> None:
         self._external_client = http_client
         self._factory = ExtractorFactory()
@@ -44,7 +43,6 @@ class ExtractorService:
         return article
 
     async def extract_safe(self, url: str) -> Article:
-        """Like extract(), but never raises — failures become a status="failed" Article."""
         try:
             return await self.extract(url)
         except ExtractorError as exc:

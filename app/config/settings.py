@@ -1,5 +1,3 @@
-
-
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -24,7 +22,6 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     tempo_session_cookie: str | None = None
-
 
 
 @lru_cache

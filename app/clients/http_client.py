@@ -1,5 +1,3 @@
-
-
 import asyncio
 
 import httpx
@@ -14,7 +12,6 @@ logger = get_logger(__name__)
 
 
 class HttpClient:
-
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
         self._client: httpx.AsyncClient | None = None

@@ -1,5 +1,3 @@
-
-
 import re
 
 DEFAULT_USER_AGENT = "NewsExtractor/1.0 (+https://github.com/news-extractor)"
@@ -29,7 +27,7 @@ SUPPORTED_PARSERS = {
 }
 
 SOURCE_HOMEPAGES = {
-    "detik": "https://news.detik.com",
+    "detik": "https://www.detik.com",
     "kompas": "https://www.kompas.com",
     "tempo": "https://www.tempo.co",
     "cnn": "https://www.cnnindonesia.com",
@@ -42,6 +40,16 @@ ARTICLE_LINK_PATTERNS = {
     "tempo": re.compile(r"^/[a-z0-9-]+/[a-z0-9-]+-\d{6,}$"),
     "cnn": re.compile(r"/\d{14}-\d+-\d+/"),
     "liputan6": re.compile(r"/read/\d+/"),
+}
+
+# CSS selector scoping discovery to the "latest news" widget on the homepage,
+# instead of the whole page. A source with no entry here (kompas) searches the
+# whole page, same as before.
+ARTICLE_LIST_CONTAINER_SELECTORS = {
+    "detik": ".section.nhl",
+    "cnn": ".flex.flex-col.gap-5.nhl-list",
+    "liputan6": ".headline--main",
+    "tempo": 'aside[class*="lg:w-[308px]"]',
 }
 
 

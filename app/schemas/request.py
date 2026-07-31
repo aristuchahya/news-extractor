@@ -6,7 +6,5 @@ class ExtractRequest(BaseModel):
 
 
 class LatestBySourceRequest(BaseModel):
-    
-
     source: str
     limit: int = 10

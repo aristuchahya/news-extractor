@@ -114,9 +114,7 @@ class ArticleDB:
         return count
 
     def count_by_status(self) -> dict[str, int]:
-        rows = self.conn.execute(
-            "SELECT status, COUNT(*) FROM articles GROUP BY status"
-        ).fetchall()
+        rows = self.conn.execute("SELECT status, COUNT(*) FROM articles GROUP BY status").fetchall()
         return {status: count for status, count in rows}
 
     def count_by_source(self) -> dict[str, int]:
@@ -138,6 +136,7 @@ class ArticleDB:
 
     def total_articles(self) -> int:
         return self.conn.execute("SELECT COUNT(*) FROM articles").fetchone()[0]
+
 
 def _prepare_rows(articles: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Convert Article dicts to rows suitable for SQLite (tags → JSON string)."""

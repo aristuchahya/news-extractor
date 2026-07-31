@@ -1,5 +1,3 @@
-
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -13,7 +11,6 @@ class ExtractionResult:
 
 
 class BaseExtractor(ABC):
-
     name: str
 
     @abstractmethod

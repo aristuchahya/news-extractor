@@ -1,5 +1,3 @@
-
-
 from bs4 import BeautifulSoup, Tag
 
 from app.config.constants import EXTRACTION_METHOD_BS4, MIN_CONTENT_LENGTH

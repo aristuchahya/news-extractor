@@ -1,14 +1,3 @@
-#!/usr/bin/env python
-"""CLI script: extract article URLs and/or latest articles from a source, print JSON.
-
-Usage:
-    uv run scripts/extract.py <url-or-source> [<url-or-source> ...] [--limit N]
-
-Each argument is either a full article URL, or a known source key (detik,
-kompas, tempo, cnn, tribun, liputan6) — a source key is expanded to its latest
-article URLs via a single homepage fetch (--limit caps how many, default 10).
-"""
-
 import asyncio
 import json
 import sys

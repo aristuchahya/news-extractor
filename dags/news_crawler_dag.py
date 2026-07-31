@@ -56,7 +56,7 @@ DEFAULT_DB_PATH: str = os.getenv("CRAWLER_DB_PATH", "/opt/airflow/data/articles.
     },
 )
 def news_crawler_pipeline() -> None:
-    
+
     @task(task_id="discover_urls", retries=1)
     def discover_urls(source: str, limit: int = DEFAULT_LIMIT_PER_SOURCE) -> dict[str, Any]:
         logger.info("Discovering URLs for source=%s limit=%d", source, limit)
@@ -81,7 +81,9 @@ def news_crawler_pipeline() -> None:
             logger.warning("No URLs discovered — nothing to extract")
             return []
 
-        logger.info("Extracting %d article(s) across %d source(s)", len(all_urls), len(discovery_results))
+        logger.info(
+            "Extracting %d article(s) across %d source(s)", len(all_urls), len(discovery_results)
+        )
 
         async def _run() -> list[dict[str, Any]]:
             articles = await extract_many(all_urls, limit_per_source=DEFAULT_LIMIT_PER_SOURCE)
@@ -120,7 +122,6 @@ def news_crawler_pipeline() -> None:
         logger.info("Ingest summary: %s", json.dumps(summary, ensure_ascii=False))
         return summary
 
-    
     discovered = discover_urls.expand(source=SOURCES)
     extracted = extract_articles(discovered)
     ingest_to_sqlite(extracted)

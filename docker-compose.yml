@@ -1,0 +1,113 @@
+# ==========================================================================
+# News Extractor — Airflow + SQLite crawling pipeline
+# ==========================================================================
+#
+# Services:
+#   postgres              Metadata database for Airflow (LocalExecutor).
+#   airflow-init          One-shot: runs ``airflow db migrate`` + creates admin user.
+#   airflow-webserver     Airflow UI at http://localhost:8080.
+#   airflow-scheduler     Runs the DAGs on schedule.
+#
+# Quick start:
+#   1. docker compose build
+#   2. docker compose up airflow-init          # wait for exit 0
+#   3. docker compose up -d                    # webserver + scheduler in background
+#   4. Open http://localhost:8080 (admin / admin)
+#   5. Unpause the ``news_crawler_pipeline`` DAG
+#
+# The crawled articles land directly in ./data/articles.db on the host.
+# Uses DELETE journal mode — no WAL locking issues, DBeaver-ready.
+#
+# Before first run, create the data dir with wide-open permissions:
+#   mkdir -p data && chmod 777 data
+# ==========================================================================
+
+x-airflow-common: &airflow-common
+  build: .
+  # Match host user ID so bind-mounted directories are writable by the
+  # ``airflow`` user inside the container.  Override via .env or export:
+  #   AIRFLOW_UID=$(id -u)
+  user: "${AIRFLOW_UID:-50000}:0"
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+    # ── Project config (pydantic-settings) ──
+    REQUEST_TIMEOUT: "30"
+    MAX_RETRY: "3"
+    LOG_LEVEL: "INFO"
+    # ── Crawler config ──
+    CRAWLER_DB_PATH: /opt/airflow/data/articles.db
+    CRAWLER_LIMIT_PER_SOURCE: "3"
+  volumes:
+    - ./dags:/opt/airflow/dags            # DAG definitions
+    - ./app:/opt/airflow/app              # News Extractor source
+    - ./data:/opt/airflow/data            # SQLite articles.db — langsung kelihatan di host
+    - airflow_logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+# --------------------------------------------------------------------------
+services:
+  # PostgreSQL — Airflow metadata store
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_airflow:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # One-shot initialisation
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate && \
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com
+    restart: "no"
+
+  # Web UI
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # DAG Scheduler
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "airflow", "jobs", "check", "--job-type", "SchedulerJob", "--hostname", "$${HOSTNAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+# --------------------------------------------------------------------------
+volumes:
+  postgres_airflow:
+  airflow_logs:

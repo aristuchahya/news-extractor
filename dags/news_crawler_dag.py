@@ -34,7 +34,7 @@ DEFAULT_DB_PATH: str = os.getenv("CRAWLER_DB_PATH", "/opt/airflow/data/articles.
 @dag(
     dag_id="news_crawler_pipeline",
     description="Discover article URLs from news sources, extract content, and ingest into SQLite.",
-    schedule="0 */2 * * *",
+    schedule="0 12 * * *",
     start_date=datetime(2026, 7, 31),
     catchup=False,
     max_active_runs=1,
